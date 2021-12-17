@@ -12,6 +12,14 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
+
 steps:
+- task: UseDotNet@2
+  displayName: Use .NET 6.0 SDK
+  inputs:
+    packageType: 'sdk'
+    version: '6.0.x'
+    includePreviewVersions: true
+
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
