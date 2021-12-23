@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.ResponseCompression;
+using AspelTools.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSwaggerGen();
+builder.Services.AddConfigurations(builder.Configuration);
+
 
 var app = builder.Build();
 
@@ -28,6 +31,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapRazorPages();
 app.MapControllers();

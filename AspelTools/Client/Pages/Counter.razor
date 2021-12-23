@@ -1,18 +1,120 @@
-﻿@page "/counter"
+﻿@page "/aspelsae"
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Aspel SAE</PageTitle>
 
-<h1>Counter</h1>
+<h1>Traspaso entre almacenes</h1>
 
-<p role="status">Current count: @currentCount</p>
+@if (CargaCompleta == false)
+{
+    <em>Cargando...</em>
+}
+else
+{
+    <div class="container-fluid">
+            <EditForm class="form" Model="@Modelo" OnValidSubmit="@Guardar">
+                @*<FluentValidationValidator @ref="validador" />*@
+                <div class="row">
+                    <div class="col-2">
+                        <div>
+                            <label class="form-label">Almacen Origen:</label>
+                        </div>
+                    </div>
+                    <div class="col-10">
+                        <InputSelect class="form-select" @bind-Value="Modelo.AlmacenOrigen">
+                            <option value="0">Seleccione una opcion</option>
+                            @foreach(var almacen in Almacenes)
+                            {
+                                <option value="@almacen.Clave">@almacen.Descripcion</option>
+                            }
+                        </InputSelect>
+                        @*<ValidationMessage For="@(() => Modelo.Nombre)" />*@
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <div>
+                            <label class="form-label">Almacen Destino:</label>
+                        </div>
+                    </div>
+                    <div class="col-10">
+                        <InputSelect class="form-select" @bind-Value="Modelo.AlmacenDestino">
+                            <option value="0">Seleccione una opcion</option>
+                            @foreach(var almacen in Almacenes)
+                            {
+                                <option value="@almacen.Clave">@almacen.Descripcion</option>
+                            }
+                        </InputSelect>
+                        @*<ValidationMessage For="@(() => Modelo.Nombre)" />*@
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <label>Linea:</label>
+                    </div>
+                    <div class="col-10">
+                        <InputText class="form-control" type="text" @bind-Value="Modelo.Linea" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-12">
+                        <label>Generar lista de productos a trasladar: </label>
+                        <p class="btn btn-info" @onclick="GenerarArchivo">Generar</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-10">
+                        <div>
+                            <label class="form-label">Comprendo que al realizar esta accion, no se podra revertir:</label>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <InputCheckbox class="form-check-inline" unchecked @bind-Value="Modelo.Confirmacion" />
+                        @*<ValidationMessage For="@(() => Modelo.Activo)" />*@
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-12">
+                        <button class="btn btn-success" disabled=@(!Modelo.Confirmacion)>Aceptar</button>
+                    </div>
+                </div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+            </EditForm>
+        </div>
+}
 
 @code {
-    private int currentCount = 0;
 
-    private void IncrementCount()
+    [Inject]
+    public IServicioAlmacenes ServicioAlmacenes { get; set; }
+
+    [Inject]
+    public IJSRuntime JS { get; set; }
+
+    private bool CargaCompleta { get; set; }
+    public TraspasoCompletoModelo Modelo { get; set; } = new TraspasoCompletoModelo();
+    private List<AlmacenDTO> Almacenes { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
-        currentCount++;
+        Almacenes = await ServicioAlmacenes.GetAllAsync();
+        CargaCompleta = true;
+    }
+
+    bool ObtieneEstadoBotonAceptar()
+    {
+        return !Modelo.Confirmacion;
+    }
+
+    async void GenerarArchivo()
+    {
+        var urlAPI = $"api/v1/multialmacen/reporte?almacen={Modelo.AlmacenOrigen}&linea={Modelo.Linea}";
+        Console.WriteLine(urlAPI);
+        await JS.InvokeVoidAsync("downloadFromUrl", new { url = urlAPI});        
+    }
+
+    void Guardar()
+    {
+        Console.WriteLine($"Almacen Origen: {Modelo.AlmacenOrigen}");
+        Console.WriteLine($"Almacen Destino: {Modelo.AlmacenDestino}");
     }
 }
