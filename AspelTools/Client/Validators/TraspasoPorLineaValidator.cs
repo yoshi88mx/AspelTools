@@ -16,6 +16,9 @@ namespace AspelTools.Client.Validators
             RuleFor(t => t.Linea).Length(5).WithMessage("El tamaño total de la linea debe ser de 5 caracteres");
 
             RuleFor(t => t.Linea).NotEqual("%%%%%").WithMessage("Debe agregar un criterio a la linea");
+            
+            RuleFor(t => t.Referencia).NotEmpty().WithMessage("Debe ingresar una referencia");
+            RuleFor(t => t.Referencia).MaximumLength(20).WithMessage("No debe superar los 20 caracteres");
         }
     }
 }

@@ -18,6 +18,8 @@ namespace AspelTools.Server
             services.AddTransient<IServicioAlmacenes, ServicioAlmacenes>();
             services.AddTransient<IServicioMultialmacen, ServicioMultialmacen>();
             services.AddTransient<IServicioControl, ServicioControl>();
+            services.AddTransient<IServicioInventario, ServicioInventario>();
+            services.AddTransient<IServicioMovimientosInventario, ServicioMovimientosInventario>();
 
             return services;
         }

@@ -13,6 +13,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var urlBase = new Uri(builder.HostEnvironment.BaseAddress);
 
 builder.Services.AddHttpClient<IServicioAlmacenes, ServicioAlmacenes>(op => op.BaseAddress = urlBase);
+builder.Services.AddHttpClient<IServicioMultiAlmacen, ServicioMultiAlmacen>(op => op.BaseAddress = urlBase);
 builder.Services.AddTransient<IValidator<TraspasoPorLineaModelo>, TraspasoPorLineaValidator>();
 
 
