@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace AspelTools.Client.Validators
 {
-    public class TraspasoCompletoValidator: AbstractValidator<TraspasoCompletoModelo>
+    public class TraspasoPorLineaValidator: AbstractValidator<TraspasoPorLineaModelo>
     {
-        public TraspasoCompletoValidator()
+        public TraspasoPorLineaValidator()
         {
             RuleFor(t => t.AlmacenOrigen).NotEmpty().WithMessage("Seleccione un almacen");
 

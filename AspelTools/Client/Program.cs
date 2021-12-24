@@ -13,7 +13,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var urlBase = new Uri(builder.HostEnvironment.BaseAddress);
 
 builder.Services.AddHttpClient<IServicioAlmacenes, ServicioAlmacenes>(op => op.BaseAddress = urlBase);
-builder.Services.AddTransient<IValidator<TraspasoCompletoModelo>, TraspasoCompletoValidator>();
+builder.Services.AddTransient<IValidator<TraspasoPorLineaModelo>, TraspasoPorLineaValidator>();
 
 
 await builder.Build().RunAsync();

@@ -1,8 +1,8 @@
-﻿@page "/traspasocompleto"
+﻿@page "/traspasoporlinea"
 
 <PageTitle>Aspel SAE</PageTitle>
 
-<h1>Traspaso entre almacenes</h1>
+<h1>Traspaso entre almacenes por linea</h1>
 
 @if (CargaCompleta == false)
 {
@@ -88,10 +88,10 @@ else
     public IJSRuntime JS { get; set; }
 
     [Inject]
-    public IValidator<TraspasoCompletoModelo> Validador { get; set; }
+    public IValidator<TraspasoPorLineaModelo> Validador { get; set; }
 
     private bool CargaCompleta { get; set; }
-    public TraspasoCompletoModelo Modelo { get; set; } = new TraspasoCompletoModelo();
+    public TraspasoPorLineaModelo Modelo { get; set; } = new TraspasoPorLineaModelo();
     private List<AlmacenDTO> Almacenes { get; set; }
     private FluentValidationValidator validador;
 

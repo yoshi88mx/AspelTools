@@ -1,6 +1,6 @@
 ﻿namespace AspelTools.Client.Pages.Traspasos
 {
-    public class TraspasoCompletoModelo
+    public class TraspasoPorLineaModelo
     {
         public string Linea { get; set; } = "%%%%%";
         public string AlmacenOrigen { get; set; }
