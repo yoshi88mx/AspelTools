@@ -1,4 +1,4 @@
-﻿@page "/aspelsae"
+﻿@page "/traspasocompleto"
 
 <PageTitle>Aspel SAE</PageTitle>
 
@@ -12,7 +12,7 @@ else
 {
     <div class="container-fluid">
             <EditForm class="form" Model="@Modelo" OnValidSubmit="@Guardar">
-                @*<FluentValidationValidator @ref="validador" />*@
+                <FluentValidationValidator @ref="validador"/>
                 <div class="row">
                     <div class="col-2">
                         <div>
@@ -21,13 +21,13 @@ else
                     </div>
                     <div class="col-10">
                         <InputSelect class="form-select" @bind-Value="Modelo.AlmacenOrigen">
-                            <option value="0">Seleccione una opcion</option>
+                            <option>Seleccione una opcion</option>
                             @foreach(var almacen in Almacenes)
                             {
                                 <option value="@almacen.Clave">@almacen.Descripcion</option>
                             }
                         </InputSelect>
-                        @*<ValidationMessage For="@(() => Modelo.Nombre)" />*@
+                        <ValidationMessage For="@(() => Modelo.AlmacenOrigen)" />
                     </div>
                 </div>
                 <div class="row">
@@ -38,13 +38,13 @@ else
                     </div>
                     <div class="col-10">
                         <InputSelect class="form-select" @bind-Value="Modelo.AlmacenDestino">
-                            <option value="0">Seleccione una opcion</option>
+                            <option>Seleccione una opcion</option>
                             @foreach(var almacen in Almacenes)
                             {
                                 <option value="@almacen.Clave">@almacen.Descripcion</option>
                             }
                         </InputSelect>
-                        @*<ValidationMessage For="@(() => Modelo.Nombre)" />*@
+                        <ValidationMessage For="@(() => Modelo.AlmacenDestino)" />
                     </div>
                 </div>
                 <div class="row">
@@ -53,23 +53,20 @@ else
                     </div>
                     <div class="col-10">
                         <InputText class="form-control" type="text" @bind-Value="Modelo.Linea" />
+                        <ValidationMessage For="@(() => Modelo.Linea)" />
                     </div>
                 </div>
                 <div class="row p-2">
                     <div class="col-12">
-                        <label>Generar lista de productos a trasladar: </label>
-                        <p class="btn btn-info" @onclick="GenerarArchivo">Generar</p>
+                        <p class="btn btn-info" @onclick="GenerarArchivo">Exportar</p>
                     </div>
                 </div>
+                <hr/>
                 <div class="row">
-                    <div class="col-10">
-                        <div>
-                            <label class="form-label">Comprendo que al realizar esta accion, no se podra revertir:</label>
-                        </div>
-                    </div>
-                    <div class="col-2">
+                    <div class="col-12">
                         <InputCheckbox class="form-check-inline" unchecked @bind-Value="Modelo.Confirmacion" />
-                        @*<ValidationMessage For="@(() => Modelo.Activo)" />*@
+                        <label class="form-label"> Comprendo que al realizar esta accion, no se podra revertir</label>
+                        <ValidationMessage For="@(() => Modelo.Confirmacion)" />
                     </div>
                 </div>
                 <div class="row p-2">
@@ -90,9 +87,13 @@ else
     [Inject]
     public IJSRuntime JS { get; set; }
 
+    [Inject]
+    public IValidator<TraspasoCompletoModelo> Validador { get; set; }
+
     private bool CargaCompleta { get; set; }
     public TraspasoCompletoModelo Modelo { get; set; } = new TraspasoCompletoModelo();
     private List<AlmacenDTO> Almacenes { get; set; }
+    private FluentValidationValidator validador;
 
     protected override async Task OnInitializedAsync()
     {
@@ -107,14 +108,22 @@ else
 
     async void GenerarArchivo()
     {
-        var urlAPI = $"api/v1/multialmacen/reporte?almacen={Modelo.AlmacenOrigen}&linea={Modelo.Linea}";
-        Console.WriteLine(urlAPI);
-        await JS.InvokeVoidAsync("downloadFromUrl", new { url = urlAPI});        
+        validador.Validate(op => op.IncludeAllRuleSets());
+        var resultado = Validador.Validate(Modelo);
+        if (resultado.IsValid)
+        {
+            var urlAPI = $"api/v1/multialmacen/reporte?almacen={Modelo.AlmacenOrigen}&linea={Modelo.Linea}";
+            await JS.InvokeVoidAsync("downloadFromUrl", new { url = urlAPI});        
+        }
+        
     }
 
     void Guardar()
     {
-        Console.WriteLine($"Almacen Origen: {Modelo.AlmacenOrigen}");
-        Console.WriteLine($"Almacen Destino: {Modelo.AlmacenDestino}");
+        if (Validador.Validate(Modelo).IsValid)
+        {
+            Console.WriteLine($"Almacen Origen: {Modelo.AlmacenOrigen}");
+            Console.WriteLine($"Almacen Destino: {Modelo.AlmacenDestino}");
+        }
     }
 }
