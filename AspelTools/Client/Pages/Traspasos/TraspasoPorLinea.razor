@@ -1,0 +1,162 @@
+﻿@page "/traspasoporlinea"
+
+<PageTitle>Aspel SAE</PageTitle>
+
+<h1>Traspaso entre almacenes por linea</h1>
+
+@if (CargaCompleta == false)
+{
+    <em>Cargando...</em>
+}
+else
+{
+    <div class="container-fluid">
+            <EditForm class="form" Model="@Modelo" OnValidSubmit="@Guardar">
+                <FluentValidationValidator @ref="validador"/>
+                <div class="row p-2">
+                    <div class="col-2">
+                        <div>
+                            <label class="form-label">Almacen Origen:</label>
+                        </div>
+                    </div>
+                    <div class="col-10">
+                        <InputSelect class="form-select" @bind-Value="Modelo.AlmacenOrigen">
+                            <option>Seleccione una opcion</option>
+                            @foreach(var almacen in Almacenes)
+                            {
+                                <option value="@almacen.Clave">@almacen.Descripcion</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Modelo.AlmacenOrigen)" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-2">
+                        <div>
+                            <label class="form-label">Almacen Destino:</label>
+                        </div>
+                    </div>
+                    <div class="col-10">
+                        <InputSelect class="form-select" @bind-Value="Modelo.AlmacenDestino">
+                            <option>Seleccione una opcion</option>
+                            @foreach(var almacen in Almacenes)
+                            {
+                                <option value="@almacen.Clave">@almacen.Descripcion</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Modelo.AlmacenDestino)" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-2">
+                        <label>Linea:</label>
+                    </div>
+                    <div class="col-10">
+                        <InputText class="form-control" type="text" @bind-Value="Modelo.Linea" />
+                        <ValidationMessage For="@(() => Modelo.Linea)" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-2">
+                        <label>Referencia:</label>
+                    </div>
+                    <div class="col-10">
+                        <InputText class="form-control" type="text" @bind-Value="Modelo.Referencia" />
+                        <ValidationMessage For="@(() => Modelo.Referencia)" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-12">
+                        <p class="btn btn-info" @onclick="GenerarArchivo">Exportar</p>
+                    </div>
+                </div>
+                <hr/>
+                <div class="row p-2">
+                    <div class="col-12">
+                        <InputCheckbox class="form-check-inline" unchecked @bind-Value="Modelo.Confirmacion" />
+                        <label class="form-label"> Comprendo que al realizar esta accion, no se podra revertir</label>
+                        <ValidationMessage For="@(() => Modelo.Confirmacion)" />
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-12">
+                        <button class="btn btn-success" disabled=@(!Modelo.Confirmacion)>Aceptar</button>
+                        @if (ProcesandoTraspaso)
+                       {
+                           <div class="spinner-border" role="status">
+                              <span class="visually-hidden">Loading...</span>
+                           </div>
+                       }
+                    </div>
+                </div>
+                @if (TraspasoCompletado)
+               {
+                   <div class="alert alert-success" role="alert">
+                      Traspaso completado! <a href="/">Capturar nuevo traspaso</a>
+                   </div>
+               }
+            </EditForm>
+        </div>
+}
+
+@code {
+
+    [Inject]
+    public IServicioAlmacenes ServicioAlmacenes { get; set; }
+
+    [Inject]
+    public IJSRuntime JS { get; set; }
+
+    [Inject]
+    public IValidator<TraspasoPorLineaModelo> Validador { get; set; }
+
+    [Inject]
+    public IServicioMultiAlmacen ServicioMultiAlmacen { get; set; }
+
+    private bool CargaCompleta { get; set; }
+    public TraspasoPorLineaModelo Modelo { get; set; } = new TraspasoPorLineaModelo();
+    private List<AlmacenDTO> Almacenes { get; set; }
+    private FluentValidationValidator validador;
+    private bool TraspasoCompletado { get; set; }
+    private bool ProcesandoTraspaso { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Almacenes = await ServicioAlmacenes.GetAllAsync();
+        CargaCompleta = true;
+    }
+
+    bool ObtieneEstadoBotonAceptar()
+    {
+        return !Modelo.Confirmacion;
+    }
+
+    async void GenerarArchivo()
+    {
+        validador.Validate(op => op.IncludeAllRuleSets());
+        var resultado = Validador.Validate(Modelo);
+        if (resultado.IsValid)
+        {
+            var urlAPI = $"api/v1/multialmacen/reporte?almacen={Modelo.AlmacenOrigen}&linea={Modelo.Linea}";
+            await JS.InvokeVoidAsync("downloadFromUrl", new { url = urlAPI});        
+        }
+
+    }
+
+    async void Guardar()
+    {
+        if (Validador.Validate(Modelo).IsValid)
+        {
+            ProcesandoTraspaso = true;
+            await InvokeAsync(StateHasChanged);
+            var respuesta = await ServicioMultiAlmacen.GeneraTraspasoPorLinea(Modelo.AlmacenOrigen, Modelo.AlmacenDestino, Modelo.Linea, Modelo.Referencia);
+            if (respuesta.IsSuccessStatusCode)
+            {
+                ProcesandoTraspaso = false;
+                await InvokeAsync(StateHasChanged);
+                TraspasoCompletado = true;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+}

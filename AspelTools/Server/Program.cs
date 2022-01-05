@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.ResponseCompression;
+using AspelTools.Server;
+using AspelTools.Server.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSwaggerGen();
+builder.Services.AddConfigurations(builder.Configuration);
+
 
 var app = builder.Build();
 
@@ -21,6 +25,7 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
@@ -28,8 +33,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapRazorPages();
+app.UseMiddleware<LicenciaMiddleware>();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
