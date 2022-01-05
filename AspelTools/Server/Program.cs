@@ -1,4 +1,5 @@
 using AspelTools.Server;
+using AspelTools.Server.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
@@ -35,6 +37,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapRazorPages();
+app.UseMiddleware<LicenciaMiddleware>();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
